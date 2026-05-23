@@ -1,6 +1,4 @@
-// ==========================================
-// 🔴 1. CONFIG
-// ==========================================
+
 const SUPABASE_URL    = "https://pmdhcytmvpctiavxmumn.supabase.co";
 const SUPABASE_KEY    = "sb_publishable_IovbRnLmlgLdVCq-XATAWA_g6_V_ox0";
 const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1507435981505302659/p92kQ0qmAQhMDXq_q4D1lCPGwILP-iDG5NqHa7pVOJaeGckrEWyfafpZC_G87ygxwB6J";
@@ -11,9 +9,6 @@ const COLOR_APPROVE = 0x3B82F6;
 const COLOR_REJECT  = 0xEF4444;
 const COLOR_VOTE    = 0xF59E0B;
 
-// ==========================================
-// 🛡️ 2. SUPABASE CLIENT
-// ==========================================
 function getDB() {
     if (!window._kpkDB) {
         const lib = window.supabase || (typeof supabase !== 'undefined' ? supabase : null);
@@ -24,9 +19,7 @@ function getDB() {
     return window._kpkDB || null;
 }
 
-// ==========================================
-// 🔔 3. DISCORD HELPERS
-// ==========================================
+
 async function sendDiscordNotification(payload) {
     try {
         const res = await fetch(DISCORD_WEBHOOK_URL, {
@@ -41,12 +34,10 @@ async function sendDiscordNotification(payload) {
 function getDeviceType() {
     const ua = navigator.userAgent;
 
-    // --- Android: ดึงรุ่นจาก UA ---
     if (/android/i.test(ua)) {
         const modelMatch = ua.match(/Android[\s\d.]+;\s*([^)]+?)\s*(Build|;|\))/i);
         let model = modelMatch ? modelMatch[1].trim() : "Unknown";
         model = model.replace(/\s*(Build\/.*|wv)$/i, '').trim();
-
         const brands = [
             [/^SM-/i,      'Samsung '],
             [/^SAMSUNG/i,  'Samsung '],
@@ -62,38 +53,82 @@ function getDeviceType() {
                 break;
             }
         }
-
         const androidVer = (ua.match(/Android\s([\d.]+)/i) || [])[1] || '';
         return `🤖 Android ${androidVer} | ${model}`;
     }
 
-    // --- iOS: เดารุ่น iPhone จาก physical pixel (screen × devicePixelRatio) ---
     if (/iPhone/i.test(ua)) {
-        const iosVer = (ua.match(/OS\s([\d_]+)/i) || [])[1]?.replace(/_/g, '.') || '';
-        const px = Math.max(screen.width, screen.height);
+        const iosVerRaw = (ua.match(/OS\s([\d_]+)/i) || [])[1] || '';
+        const iosVer    = iosVerRaw.replace(/_/g, '.');
+        const iosMajor  = parseInt(iosVer) || 0;
+
+        const physH = Math.round(Math.max(screen.width, screen.height) * (window.devicePixelRatio || 1));
         const ratio = window.devicePixelRatio || 1;
-        const physH = px * ratio; // physical pixel จริง
 
-        let model = 'iPhone';
-        if      (physH >= 2796) model = 'iPhone 16 Pro Max / 15 Pro Max';
-        else if (physH >= 2778) model = 'iPhone 14 Pro Max / 13 Pro Max';
-        else if (physH >= 2688) model = 'iPhone 11 Pro Max / XS Max';
-        else if (physH >= 2556) model = 'iPhone 16 Pro / 15 Pro / 14 Pro';
-        else if (physH >= 2532) model = 'iPhone 16 / 15 / 14 / 13 / 12';
-        else if (physH >= 2436) model = 'iPhone X / XS / 11 Pro';
-        else if (physH >= 2340) model = 'iPhone 16e / 13 mini / 12 mini';
-        else if (physH >= 2208) model = 'iPhone 8 Plus / 7 Plus / 6s Plus';
-        else if (physH >= 1334) model = 'iPhone SE (2nd/3rd) / 8 / 7';
-        else if (physH >= 1136) model = 'iPhone SE (1st gen) / 5s';
-        else if (physH >= 960)  model = 'iPhone 4s';
+        const models = [
+            [2868, 3, 18, 99, 'iPhone 16 Pro Max'],
 
-        return `🍎 iOS ${iosVer} | ${model}`;
+            [2796, 3, 17, 99, 'iPhone 15 Pro Max'],
+            [2796, 2, 17, 99, 'iPhone 15 Plus'],
+
+            [2778, 3, 16, 99, 'iPhone 14 Pro Max'],
+            [2778, 3, 15, 15, 'iPhone 13 Pro Max'],
+            [2778, 3,  0, 14, 'iPhone 12 Pro Max'],
+
+
+            [2688, 3, 13, 99, 'iPhone 11 Pro Max'],
+            [2688, 3,  0, 12, 'iPhone XS Max'],
+
+            [2622, 3, 18, 99, 'iPhone 16 Pro'],
+
+            [2556, 3, 17, 99, 'iPhone 15 Pro'],
+            [2556, 3, 16, 16, 'iPhone 14 Pro'],
+
+            [2532, 3, 18, 99, 'iPhone 16'],
+            [2532, 3, 17, 17, 'iPhone 15'],
+            [2532, 3, 16, 16, 'iPhone 14'],
+            [2532, 3, 15, 15, 'iPhone 13'],
+            [2532, 3,  0, 14, 'iPhone 12'],
+
+            [2436, 3, 13, 99, 'iPhone 11 Pro'],
+            [2436, 3, 12, 12, 'iPhone XS'],
+            [2436, 3,  0, 11, 'iPhone X'],
+
+            [2426, 3, 18, 99, 'iPhone 16e'],
+
+            [2340, 3, 15, 99, 'iPhone 13 mini'],
+            [2340, 3,  0, 14, 'iPhone 12 mini'],
+
+            [2208, 3, 12, 99, 'iPhone 8 Plus'],
+            [2208, 3, 11, 11, 'iPhone 7 Plus'],
+            [2208, 3,  0, 10, 'iPhone 6s Plus'],
+
+            [1792, 2, 13, 99, 'iPhone 11'],
+            [1792, 2,  0, 12, 'iPhone XR'],
+
+            [1334, 2, 15, 99, 'iPhone SE (3rd gen)'],
+            [1334, 2, 14, 14, 'iPhone SE (2nd gen)'],
+            [1334, 2, 12, 13, 'iPhone 8'],
+            [1334, 2,  0, 11, 'iPhone 7'],
+
+            [1136, 2, 12, 99, 'iPhone SE (1st gen)'],
+            [1136, 2,  0, 11, 'iPhone 5s'],
+
+            [960,  2,  0, 99, 'iPhone 4s'],
+        ];
+
+        for (const [ph, pr, iosMin, iosMax, name] of models) {
+            if (Math.abs(physH - ph) <= 10 && Math.abs(ratio - pr) < 0.5 && iosMajor >= iosMin && iosMajor <= iosMax) {
+                return `🍎 iOS ${iosVer} | ${name}`;
+            }
+        }
+
+        return `🍎 iOS ${iosVer} | iPhone (${physH}px)`;
     }
 
-    // --- iPad ---
     if (/iPad/i.test(ua)) {
         const iosVer = (ua.match(/OS\s([\d_]+)/i) || [])[1]?.replace(/_/g, '.') || '';
-        const physH = Math.max(screen.width, screen.height) * (window.devicePixelRatio || 1);
+        const physH  = Math.round(Math.max(screen.width, screen.height) * (window.devicePixelRatio || 1));
         let model = 'iPad';
         if      (physH >= 2732) model = 'iPad Pro 12.9"';
         else if (physH >= 2388) model = 'iPad Pro 11"';
@@ -105,24 +140,20 @@ function getDeviceType() {
         return `🍎 iPadOS ${iosVer} | ${model}`;
     }
 
-    // --- Windows ---
     if (/Windows NT/i.test(ua)) {
-        const ver = (ua.match(/Windows NT ([\d.]+)/i) || [])[1];
+        const ver    = (ua.match(/Windows NT ([\d.]+)/i) || [])[1];
         const winMap = { '10.0': '10/11', '6.3': '8.1', '6.2': '8', '6.1': '7' };
         const winVer = winMap[ver] || ver || '';
         const browser = /Edg/i.test(ua) ? 'Edge' : /OPR/i.test(ua) ? 'Opera' : /Chrome/i.test(ua) ? 'Chrome' : /Firefox/i.test(ua) ? 'Firefox' : 'Browser';
         return `🪟 Windows ${winVer} | ${browser}`;
     }
 
-    // --- Mac ---
     if (/Macintosh/i.test(ua)) {
         const macVer = (ua.match(/Mac OS X ([\d_]+)/i) || [])[1]?.replace(/_/g, '.') || '';
         return `🍎 macOS ${macVer}`;
     }
 
-    // --- Linux ---
     if (/Linux/i.test(ua)) return '🐧 Linux';
-
     return '🖥️ Unknown Device';
 }
 
@@ -207,9 +238,7 @@ async function notifyVoteMilestone({ policyId, title, votesYes, votesNo }) {
     });
 }
 
-// ==========================================
-// 🚩 4. ADMIN FUNCTIONS — ทั้งหมดเป็น Global
-// ==========================================
+
 window.checkPassword = function() {
     const pass = document.getElementById('adminPass').value;
     if (pass === ADMIN_PASSWORD) {
@@ -335,12 +364,9 @@ window.deletePolicy = async function(id, title) {
     await window.loadAdminData();
 };
 
-// ==========================================
-// 🔄 5. DOM READY — suggest + vote pages
-// ==========================================
+
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 📝 suggest.html ---
     const form = document.getElementById('discord-form');
     if (form) {
         form.addEventListener('submit', async (e) => {
@@ -401,7 +427,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 🗳️ vote page ---
     const voteGrid = document.getElementById('voteGrid');
     if (voteGrid) {
         window.loadApprovedPolicies = async function() {
@@ -491,18 +516,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// ==========================================
-// 🛡️ ANTI-COPY PROTECTION — จัดเต็ม
-// ==========================================
+
 (function() {
 
-    // 1) บล็อก Right-click
     document.addEventListener('contextmenu', e => e.preventDefault());
 
-    // 2) บล็อก Drag
     document.addEventListener('dragstart', e => e.preventDefault());
 
-    // 3) บล็อก keyboard shortcuts
     document.addEventListener('keydown', e => {
         if ([123, 116, 122].includes(e.keyCode)) { e.preventDefault(); return; }
 
@@ -516,7 +536,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 4) บล็อก text selection
     document.addEventListener('selectstart', e => e.preventDefault());
     const noSelectStyle = document.createElement('style');
     noSelectStyle.textContent = `
@@ -534,12 +553,10 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     document.head.appendChild(noSelectStyle);
 
-    // 5) บล็อก Copy event
     document.addEventListener('copy',  e => e.preventDefault());
     document.addEventListener('cut',   e => e.preventDefault());
     document.addEventListener('paste', e => e.preventDefault());
 
-    // ✅ ตรวจมือถือ — ข้ามการตรวจ DevTools ทั้งหมด
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
     const devtoolsHTML = `
@@ -550,7 +567,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="font-size:14px;color:#6b7280">กรุณาปิด DevTools แล้วรีเฟรชหน้าใหม่</div>
         </div>`;
 
-    // 6) ตรวจขนาดหน้าต่าง (Desktop only)
     let devtoolsOpen = false;
     const threshold  = 160;
     function checkDevTools() {
@@ -577,11 +593,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 2000);
 
-    // 8) บล็อก print
     window.addEventListener('beforeprint', e => e.preventDefault());
     window.print = function() { return false; };
 
-    // 9) Watermark
     function addWatermark() {
         const wm = document.createElement('div');
         wm.style.cssText = `
