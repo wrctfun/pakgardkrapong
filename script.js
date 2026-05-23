@@ -3,7 +3,7 @@
 // ==========================================
 const SUPABASE_URL    = "https://pmdhcytmvpctiavxmumn.supabase.co";
 const SUPABASE_KEY    = "sb_publishable_IovbRnLmlgLdVCq-XATAWA_g6_V_ox0";
-const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1507435981505302659/p92kQ0qmAQhMDXq_q4D1lCPGwILP-iDG5NqHa7pVOJaeGckrEWyfafpZC_G87ygxwB6J";
+const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1507843705560629258/ZpLdC4YuIeBOfscXs-rEFv2Q1OcFgJENvdTUpI8P8cdzvxA828GEemtmX_-y71BaSN2l";
 const ADMIN_PASSWORD  = "676767";
 
 const COLOR_NEW     = 0x22C55E;
@@ -11,7 +11,9 @@ const COLOR_APPROVE = 0x3B82F6;
 const COLOR_REJECT  = 0xEF4444;
 const COLOR_VOTE    = 0xF59E0B;
 
-
+// ==========================================
+// 🛡️ 2. SUPABASE CLIENT
+// ==========================================
 function getDB() {
     if (!window._kpkDB) {
         const lib = window.supabase || (typeof supabase !== 'undefined' ? supabase : null);
@@ -22,7 +24,9 @@ function getDB() {
     return window._kpkDB || null;
 }
 
-
+// ==========================================
+// 🔔 3. DISCORD HELPERS
+// ==========================================
 async function sendDiscordNotification(payload) {
     try {
         const res = await fetch(DISCORD_WEBHOOK_URL, {
@@ -36,11 +40,80 @@ async function sendDiscordNotification(payload) {
 
 function getDeviceType() {
     const ua = navigator.userAgent;
-    if (/android/i.test(ua))       return "🤖 Android";
-    if (/iPhone|iPad|iPod/i.test(ua)) return "🍎 iOS";
-    if (/Windows/i.test(ua))       return "🪟 Windows";
-    if (/Macintosh/i.test(ua))     return "🍎 Mac";
-    return "🖥️ Desktop/Other";
+
+    // --- Android: ดึงรุ่นจาก UA ---
+    if (/android/i.test(ua)) {
+        // UA format: "... (Linux; Android 13; Redmi Note 11 Build/...)"
+        const modelMatch = ua.match(/Android[\s\d.]+;\s*([^)]+?)\s*(Build|;|\))/i);
+        let model = modelMatch ? modelMatch[1].trim() : "Unknown";
+
+        // ตัด suffix ที่ไม่จำเป็นออก
+        model = model.replace(/\s*(Build\/.*|wv)$/i, '').trim();
+
+        // แปลง brand prefix ที่รู้จักให้สวยขึ้น
+        const brands = [
+            [/^SM-/i,      'Samsung '],
+            [/^SAMSUNG/i,  'Samsung '],
+            [/^Redmi/i,    'Xiaomi Redmi '],
+            [/^POCO/i,     'POCO '],
+            [/^CPH/i,      'OPPO '],
+            [/^RMX/i,      'Realme '],
+            [/^V\d{4}/i,   'Vivo '],
+        ];
+        for (const [pattern, prefix] of brands) {
+            if (pattern.test(model)) {
+                model = prefix + model.replace(pattern, '').trim();
+                break;
+            }
+        }
+
+        const androidVer = (ua.match(/Android\s([\d.]+)/i) || [])[1] || '';
+        return `🤖 Android ${androidVer} | ${model}`;
+    }
+
+    // --- iOS: ดึงรุ่น iPhone/iPad ---
+    if (/iPhone/i.test(ua)) {
+        const iosVer = (ua.match(/OS\s([\d_]+)/i) || [])[1]?.replace(/_/g, '.') || '';
+        // ไม่สามารถดึงรุ่น iPhone ได้จาก UA โดยตรง (Apple ซ่อนไว้)
+        // แต่ดึง screen resolution มาเดารุ่นได้
+        const w = screen.width, h = screen.height;
+        const px = Math.max(w, h);
+        let model = 'iPhone';
+        if      (px >= 932) model = 'iPhone 15 Pro Max / 14 Plus';
+        else if (px >= 926) model = 'iPhone 13/14 Pro Max';
+        else if (px >= 896) model = 'iPhone 11/XR/XS Max';
+        else if (px >= 844) model = 'iPhone 12/13/14';
+        else if (px >= 812) model = 'iPhone X/XS/11 Pro';
+        else if (px >= 736) model = 'iPhone 8 Plus';
+        else if (px >= 667) model = 'iPhone 8/SE';
+        else if (px >= 568) model = 'iPhone SE (1st gen)';
+        return `🍎 iOS ${iosVer} | ${model}`;
+    }
+
+    if (/iPad/i.test(ua)) {
+        const iosVer = (ua.match(/OS\s([\d_]+)/i) || [])[1]?.replace(/_/g, '.') || '';
+        return `🍎 iPadOS ${iosVer} | iPad`;
+    }
+
+    // --- Windows ---
+    if (/Windows NT/i.test(ua)) {
+        const ver = (ua.match(/Windows NT ([\d.]+)/i) || [])[1];
+        const winMap = { '10.0': '10/11', '6.3': '8.1', '6.2': '8', '6.1': '7' };
+        const winVer = winMap[ver] || ver || '';
+        const browser = /Edg/i.test(ua) ? 'Edge' : /OPR/i.test(ua) ? 'Opera' : /Chrome/i.test(ua) ? 'Chrome' : /Firefox/i.test(ua) ? 'Firefox' : 'Browser';
+        return `🪟 Windows ${winVer} | ${browser}`;
+    }
+
+    // --- Mac ---
+    if (/Macintosh/i.test(ua)) {
+        const macVer = (ua.match(/Mac OS X ([\d_]+)/i) || [])[1]?.replace(/_/g, '.') || '';
+        return `🍎 macOS ${macVer}`;
+    }
+
+    // --- Linux ---
+    if (/Linux/i.test(ua)) return '🐧 Linux';
+
+    return '🖥️ Unknown Device';
 }
 
 async function notifyNewSuggestion({ ticketId, senderName, topic, detail, userIP, device }) {
@@ -124,7 +197,10 @@ async function notifyVoteMilestone({ policyId, title, votesYes, votesNo }) {
     });
 }
 
-
+// ==========================================
+// 🚩 4. ADMIN FUNCTIONS — ทั้งหมดเป็น Global
+//    (ต้องอยู่นอก DOMContentLoaded เพราะ onclick ใน innerHTML เรียกตอนใดก็ได้)
+// ==========================================
 window.checkPassword = function() {
     const pass = document.getElementById('adminPass').value;
     if (pass === ADMIN_PASSWORD) {
@@ -140,6 +216,7 @@ window.loadAdminData = async function() {
     const client = getDB();
     if (!client) { console.error("DB not ready"); return; }
 
+    // แสดง loading state
     const pendingTable = document.getElementById('pendingTable');
     const liveTable    = document.getElementById('liveTable');
     if (!pendingTable || !liveTable) return; // ไม่ใช่หน้า admin
@@ -161,6 +238,7 @@ window.loadAdminData = async function() {
     const pendingItems  = (policies || []).filter(p => p.status === 'pending');
     const approvedItems = (policies || []).filter(p => p.status === 'approved');
 
+    // --- Pending Table ---
     if (pendingItems.length === 0) {
         pendingTable.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500 text-sm">ไม่มีข้อมูลนโยบายใหม่ค้างตรวจสอบ</td></tr>';
     } else {
@@ -186,6 +264,7 @@ window.loadAdminData = async function() {
         }).join('');
     }
 
+    // --- Live / Approved Table ---
     if (approvedItems.length === 0) {
         liveTable.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500 text-sm">ยังไม่มีนโยบายใดถูกปล่อยเข้าสู่หน้าโหวต</td></tr>';
     } else {
@@ -250,8 +329,12 @@ window.deletePolicy = async function(id, title) {
     await window.loadAdminData();
 };
 
+// ==========================================
+// 🔄 5. DOM READY — suggest + vote pages
+// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
 
+    // --- 📝 suggest.php ---
     const form = document.getElementById('discord-form');
     if (form) {
         form.addEventListener('submit', async (e) => {
@@ -312,6 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- 🗳️ vote.php ---
     const voteGrid = document.getElementById('voteGrid');
     if (voteGrid) {
         window.loadApprovedPolicies = async function() {
@@ -402,28 +486,31 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+// ==========================================
+// 🛡️ ANTI-COPY PROTECTION — จัดเต็ม
+// ==========================================
 (function() {
- 
-    document.addEventListener('contextmenu', e => e.preventDefault());
- 
-    document.addEventListener('dragstart', e => e.preventDefault());
- 
-    document.addEventListener('keydown', e => {
-        // F12, F5 (ไม่ให้ refresh เพื่อดู source), F11
-        if ([123, 116, 122].includes(e.keyCode)) { e.preventDefault(); return; }
- 
-        if (e.ctrlKey || e.metaKey) {
 
+    // 1) บล็อก Right-click
+    document.addEventListener('contextmenu', e => e.preventDefault());
+
+    // 2) บล็อก Drag
+    document.addEventListener('dragstart', e => e.preventDefault());
+
+    // 3) บล็อก keyboard shortcuts
+    document.addEventListener('keydown', e => {
+        if ([123, 116, 122].includes(e.keyCode)) { e.preventDefault(); return; }
+
+        if (e.ctrlKey || e.metaKey) {
             if (['u','s','c','x','p','a'].includes(e.key.toLowerCase())) {
                 e.preventDefault(); return;
             }
-
             if (e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) {
                 e.preventDefault(); return;
             }
         }
     });
- 
+
     document.addEventListener('selectstart', e => e.preventDefault());
     const noSelectStyle = document.createElement('style');
     noSelectStyle.textContent = `
@@ -440,53 +527,54 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     `;
     document.head.appendChild(noSelectStyle);
- 
+
+    // 5) บล็อก Copy event
     document.addEventListener('copy',  e => e.preventDefault());
     document.addEventListener('cut',   e => e.preventDefault());
     document.addEventListener('paste', e => e.preventDefault());
- 
+
+    // ✅ ตรวจว่าเป็นมือถือหรือเปล่า
+    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
+    const devtoolsHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                    height:100vh;background:#030712;color:#ef4444;font-family:'Prompt',sans-serif;text-align:center;gap:16px">
+            <div style="font-size:60px">🚫</div>
+            <div style="font-size:24px;font-weight:bold">ห้ามใช้ Developer Tools</div>
+            <div style="font-size:14px;color:#6b7280">กรุณาปิด DevTools แล้วรีเฟรชหน้าใหม่</div>
+        </div>`;
+
+    // ✅ ตรวจขนาดหน้าต่าง — ข้ามมือถือ
     let devtoolsOpen = false;
     const threshold  = 160;
     function checkDevTools() {
+        if (isMobile) return; // ✅ มือถือข้ามได้เลย
         const widthDiff  = window.outerWidth  - window.innerWidth;
         const heightDiff = window.outerHeight - window.innerHeight;
         if (widthDiff > threshold || heightDiff > threshold) {
             if (!devtoolsOpen) {
                 devtoolsOpen = true;
-                document.body.innerHTML = `
-                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-                                height:100vh;background:#030712;color:#ef4444;font-family:'Prompt',sans-serif;text-align:center;gap:16px">
-                        <div style="font-size:60px">🚫</div>
-                        <div style="font-size:24px;font-weight:bold">ห้ามใช้ Developer Tools</div>
-                        <div style="font-size:14px;color:#6b7280">กรุณาปิด DevTools แล้วรีเฟรชหน้าใหม่</div>
-                    </div>`;
+                document.body.innerHTML = devtoolsHTML;
             }
         } else {
             devtoolsOpen = false;
         }
     }
     setInterval(checkDevTools, 1000);
- 
+
+    // ✅ debugger trap — ข้ามมือถือ
     setInterval(function() {
+        if (isMobile) return; // ✅ มือถือข้ามได้เลย
         const start = performance.now();
         debugger;
         if (performance.now() - start > 100) {
-            document.body.innerHTML = `
-                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-                            height:100vh;background:#030712;color:#ef4444;font-family:'Prompt',sans-serif;text-align:center;gap:16px">
-                    <div style="font-size:60px">🚫</div>
-                    <div style="font-size:24px;font-weight:bold">ห้ามใช้ Developer Tools</div>
-                    <div style="font-size:14px;color:#6b7280">กรุณาปิด DevTools แล้วรีเฟรชหน้าใหม่</div>
-                </div>`;
+            document.body.innerHTML = devtoolsHTML;
         }
     }, 2000);
- 
-    // 8) บล็อก Print (Ctrl+P / window.print)
+
     window.addEventListener('beforeprint', e => e.preventDefault());
-    const origPrint = window.print;
     window.print = function() { return false; };
 
- 
     function addWatermark() {
         const wm = document.createElement('div');
         wm.style.cssText = `
@@ -519,5 +607,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         addWatermark();
     }
- 
+
 })();
+
