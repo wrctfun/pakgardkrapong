@@ -3,7 +3,7 @@
 // ==========================================
 const SUPABASE_URL    = "https://pmdhcytmvpctiavxmumn.supabase.co";
 const SUPABASE_KEY    = "sb_publishable_IovbRnLmlgLdVCq-XATAWA_g6_V_ox0";
-const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1507843705560629258/ZpLdC4YuIeBOfscXs-rEFv2Q1OcFgJENvdTUpI8P8cdzvxA828GEemtmX_-y71BaSN2l";
+const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1507435981505302659/p92kQ0qmAQhMDXq_q4D1lCPGwILP-iDG5NqHa7pVOJaeGckrEWyfafpZC_G87ygxwB6J";
 const ADMIN_PASSWORD  = "676767";
 
 const COLOR_NEW     = 0x22C55E;
@@ -43,14 +43,10 @@ function getDeviceType() {
 
     // --- Android: ดึงรุ่นจาก UA ---
     if (/android/i.test(ua)) {
-        // UA format: "... (Linux; Android 13; Redmi Note 11 Build/...)"
         const modelMatch = ua.match(/Android[\s\d.]+;\s*([^)]+?)\s*(Build|;|\))/i);
         let model = modelMatch ? modelMatch[1].trim() : "Unknown";
-
-        // ตัด suffix ที่ไม่จำเป็นออก
         model = model.replace(/\s*(Build\/.*|wv)$/i, '').trim();
 
-        // แปลง brand prefix ที่รู้จักให้สวยขึ้น
         const brands = [
             [/^SM-/i,      'Samsung '],
             [/^SAMSUNG/i,  'Samsung '],
@@ -71,28 +67,42 @@ function getDeviceType() {
         return `🤖 Android ${androidVer} | ${model}`;
     }
 
-    // --- iOS: ดึงรุ่น iPhone/iPad ---
+    // --- iOS: เดารุ่น iPhone จาก physical pixel (screen × devicePixelRatio) ---
     if (/iPhone/i.test(ua)) {
         const iosVer = (ua.match(/OS\s([\d_]+)/i) || [])[1]?.replace(/_/g, '.') || '';
-        // ไม่สามารถดึงรุ่น iPhone ได้จาก UA โดยตรง (Apple ซ่อนไว้)
-        // แต่ดึง screen resolution มาเดารุ่นได้
-        const w = screen.width, h = screen.height;
-        const px = Math.max(w, h);
+        const px = Math.max(screen.width, screen.height);
+        const ratio = window.devicePixelRatio || 1;
+        const physH = px * ratio; // physical pixel จริง
+
         let model = 'iPhone';
-        if      (px >= 932) model = 'iPhone 15 Pro Max / 14 Plus';
-        else if (px >= 926) model = 'iPhone 13/14 Pro Max';
-        else if (px >= 896) model = 'iPhone 11/XR/XS Max';
-        else if (px >= 844) model = 'iPhone 12/13/14';
-        else if (px >= 812) model = 'iPhone X/XS/11 Pro';
-        else if (px >= 736) model = 'iPhone 8 Plus';
-        else if (px >= 667) model = 'iPhone 8/SE';
-        else if (px >= 568) model = 'iPhone SE (1st gen)';
+        if      (physH >= 2796) model = 'iPhone 16 Pro Max / 15 Pro Max';
+        else if (physH >= 2778) model = 'iPhone 14 Pro Max / 13 Pro Max';
+        else if (physH >= 2688) model = 'iPhone 11 Pro Max / XS Max';
+        else if (physH >= 2556) model = 'iPhone 16 Pro / 15 Pro / 14 Pro';
+        else if (physH >= 2532) model = 'iPhone 16 / 15 / 14 / 13 / 12';
+        else if (physH >= 2436) model = 'iPhone X / XS / 11 Pro';
+        else if (physH >= 2340) model = 'iPhone 16e / 13 mini / 12 mini';
+        else if (physH >= 2208) model = 'iPhone 8 Plus / 7 Plus / 6s Plus';
+        else if (physH >= 1334) model = 'iPhone SE (2nd/3rd) / 8 / 7';
+        else if (physH >= 1136) model = 'iPhone SE (1st gen) / 5s';
+        else if (physH >= 960)  model = 'iPhone 4s';
+
         return `🍎 iOS ${iosVer} | ${model}`;
     }
 
+    // --- iPad ---
     if (/iPad/i.test(ua)) {
         const iosVer = (ua.match(/OS\s([\d_]+)/i) || [])[1]?.replace(/_/g, '.') || '';
-        return `🍎 iPadOS ${iosVer} | iPad`;
+        const physH = Math.max(screen.width, screen.height) * (window.devicePixelRatio || 1);
+        let model = 'iPad';
+        if      (physH >= 2732) model = 'iPad Pro 12.9"';
+        else if (physH >= 2388) model = 'iPad Pro 11"';
+        else if (physH >= 2224) model = 'iPad Pro 10.5"';
+        else if (physH >= 2160) model = 'iPad Air / iPad 10th gen';
+        else if (physH >= 2048) model = 'iPad Air / iPad Pro 9.7"';
+        else if (physH >= 1668) model = 'iPad Air / iPad mini';
+        else if (physH >= 1536) model = 'iPad (Retina)';
+        return `🍎 iPadOS ${iosVer} | ${model}`;
     }
 
     // --- Windows ---
@@ -199,7 +209,6 @@ async function notifyVoteMilestone({ policyId, title, votesYes, votesNo }) {
 
 // ==========================================
 // 🚩 4. ADMIN FUNCTIONS — ทั้งหมดเป็น Global
-//    (ต้องอยู่นอก DOMContentLoaded เพราะ onclick ใน innerHTML เรียกตอนใดก็ได้)
 // ==========================================
 window.checkPassword = function() {
     const pass = document.getElementById('adminPass').value;
@@ -216,10 +225,9 @@ window.loadAdminData = async function() {
     const client = getDB();
     if (!client) { console.error("DB not ready"); return; }
 
-    // แสดง loading state
     const pendingTable = document.getElementById('pendingTable');
     const liveTable    = document.getElementById('liveTable');
-    if (!pendingTable || !liveTable) return; // ไม่ใช่หน้า admin
+    if (!pendingTable || !liveTable) return;
 
     pendingTable.innerHTML = '<tr><td colspan="5" class="px-6 py-6 text-center text-gray-500 text-sm">⏳ กำลังโหลด...</td></tr>';
     liveTable.innerHTML    = '<tr><td colspan="5" class="px-6 py-6 text-center text-gray-500 text-sm">⏳ กำลังโหลด...</td></tr>';
@@ -238,7 +246,6 @@ window.loadAdminData = async function() {
     const pendingItems  = (policies || []).filter(p => p.status === 'pending');
     const approvedItems = (policies || []).filter(p => p.status === 'approved');
 
-    // --- Pending Table ---
     if (pendingItems.length === 0) {
         pendingTable.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500 text-sm">ไม่มีข้อมูลนโยบายใหม่ค้างตรวจสอบ</td></tr>';
     } else {
@@ -264,7 +271,6 @@ window.loadAdminData = async function() {
         }).join('');
     }
 
-    // --- Live / Approved Table ---
     if (approvedItems.length === 0) {
         liveTable.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500 text-sm">ยังไม่มีนโยบายใดถูกปล่อยเข้าสู่หน้าโหวต</td></tr>';
     } else {
@@ -334,7 +340,7 @@ window.deletePolicy = async function(id, title) {
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 📝 suggest.php ---
+    // --- 📝 suggest.html ---
     const form = document.getElementById('discord-form');
     if (form) {
         form.addEventListener('submit', async (e) => {
@@ -395,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 🗳️ vote.php ---
+    // --- 🗳️ vote page ---
     const voteGrid = document.getElementById('voteGrid');
     if (voteGrid) {
         window.loadApprovedPolicies = async function() {
@@ -485,7 +491,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-
 // ==========================================
 // 🛡️ ANTI-COPY PROTECTION — จัดเต็ม
 // ==========================================
@@ -511,6 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // 4) บล็อก text selection
     document.addEventListener('selectstart', e => e.preventDefault());
     const noSelectStyle = document.createElement('style');
     noSelectStyle.textContent = `
@@ -533,7 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('cut',   e => e.preventDefault());
     document.addEventListener('paste', e => e.preventDefault());
 
-    // ✅ ตรวจว่าเป็นมือถือหรือเปล่า
+    // ✅ ตรวจมือถือ — ข้ามการตรวจ DevTools ทั้งหมด
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
     const devtoolsHTML = `
@@ -544,11 +550,11 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="font-size:14px;color:#6b7280">กรุณาปิด DevTools แล้วรีเฟรชหน้าใหม่</div>
         </div>`;
 
-    // ✅ ตรวจขนาดหน้าต่าง — ข้ามมือถือ
+    // 6) ตรวจขนาดหน้าต่าง (Desktop only)
     let devtoolsOpen = false;
     const threshold  = 160;
     function checkDevTools() {
-        if (isMobile) return; // ✅ มือถือข้ามได้เลย
+        if (isMobile) return; 
         const widthDiff  = window.outerWidth  - window.innerWidth;
         const heightDiff = window.outerHeight - window.innerHeight;
         if (widthDiff > threshold || heightDiff > threshold) {
@@ -562,9 +568,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     setInterval(checkDevTools, 1000);
 
-    // ✅ debugger trap — ข้ามมือถือ
     setInterval(function() {
-        if (isMobile) return; // ✅ มือถือข้ามได้เลย
+        if (isMobile) return; 
         const start = performance.now();
         debugger;
         if (performance.now() - start > 100) {
@@ -572,9 +577,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 2000);
 
+    // 8) บล็อก print
     window.addEventListener('beforeprint', e => e.preventDefault());
     window.print = function() { return false; };
 
+    // 9) Watermark
     function addWatermark() {
         const wm = document.createElement('div');
         wm.style.cssText = `
@@ -609,4 +616,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 })();
-
