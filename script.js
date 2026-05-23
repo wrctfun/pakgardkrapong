@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('discord-form');
     
-    // หากอยู่ในหน้าแรกที่ไม่มีฟอร์ม จะข้ามการทำงานส่วนนี้ไปเพื่อป้องกัน Error
     if (!form) return;
 
     const submitBtn = document.getElementById('submitBtn');
@@ -61,4 +60,35 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = false;
         }
     });
+});
+
+/* --- ระบบป้องกันการก๊อปปี้แบบจัดเต็ม (JavaScript) --- */
+
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+document.addEventListener('dragstart', function(e) {
+    e.preventDefault();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'F12' || e.keyCode === 123) {
+        e.preventDefault();
+    }
+    
+    if (e.ctrlKey || e.metaKey) { 
+        if (e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) {
+            e.preventDefault();
+        }
+        if (e.key === 'U' || e.key === 'u') {
+            e.preventDefault();
+        }
+        if (e.key === 'S' || e.key === 's') {
+            e.preventDefault();
+        }
+        if (e.key === 'C' || e.key === 'c' || e.key === 'X' || e.key === 'x' || e.key === 'P' || e.key === 'p') {
+            e.preventDefault();
+        }
+    }
 });
