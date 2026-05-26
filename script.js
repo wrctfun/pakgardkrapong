@@ -1,7 +1,7 @@
 
 const SUPABASE_URL    = "https://pmdhcytmvpctiavxmumn.supabase.co";
 const SUPABASE_KEY    = "sb_publishable_IovbRnLmlgLdVCq-XATAWA_g6_V_ox0";
-const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1507435981505302659/p92kQ0qmAQhMDXq_q4D1lCPGwILP-iDG5NqHa7pVOJaeGckrEWyfafpZC_G87ygxwB6J";
+const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1508835897515315381/hZN7xaZx-ppAOUhLevGE3Fj22JFNzNcW76IInpzA1k408N88R3TBbJZq9eFfsH7SbRIl";
 const ADMIN_PASSWORD  = "676767";
 
 const COLOR_NEW     = 0x22C55E;
