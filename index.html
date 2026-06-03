@@ -18,65 +18,33 @@
                 <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center text-black font-bold text-xl">ก</div>
                 <span class="text-xl font-bold tracking-wider">กาดกระป๋อง</span>
             </div>
-            <!-- Desktop menu -->
-            <div class="hidden md:flex space-x-8 text-sm font-medium">
-                <a href="#home" class="text-green-400 font-bold border-b-2 border-green-400 pb-1">หน้าแรก</a>
-                <a href="#leader" class="hover:text-green-400 transition">หัวหน้าพรรค</a>
-                <a href="#team" class="hover:text-green-400 transition">สมาชิก</a>
-                <a href="/suggest" class="hover:text-green-400 transition">เสนอนโยบาย</a>
-                <a href="/vote" class="hover:text-green-400 transition">โหวตนโยบาย</a>
+            <!-- Desktop nav -->
+            <div class="hidden md:flex space-x-6 lg:space-x-8 text-sm font-medium" id="navLinks">
+                <a href="#home" data-section="home" class="nav-link text-green-400 font-bold border-b-2 border-green-400 pb-1 transition">หน้าแรก</a>
+                <a href="#leader" data-section="leader" class="nav-link text-gray-300 hover:text-green-400 pb-1 border-b-2 border-transparent transition">หัวหน้าพรรค</a>
+                <a href="#policies" data-section="policies" class="nav-link text-gray-300 hover:text-green-400 pb-1 border-b-2 border-transparent transition">นโยบาย</a>
+                <a href="#team" data-section="team" class="nav-link text-gray-300 hover:text-green-400 pb-1 border-b-2 border-transparent transition">สมาชิก</a>
+                <a href="suggest.html" class="text-gray-300 hover:text-green-400 pb-1 border-b-2 border-transparent transition">เสนอนโยบาย</a>
+                <a href="vote.html" class="text-gray-300 hover:text-green-400 pb-1 border-b-2 border-transparent transition">โหวตนโยบาย</a>
             </div>
-
-            <!-- Hamburger button (mobile only) -->
-            <button id="menu-btn" class="md:hidden flex flex-col justify-center items-center w-10 h-10 gap-1.5 rounded-lg hover:bg-gray-800 transition" aria-label="เปิดเมนู">
-                <span class="menu-line block w-6 h-0.5 bg-white transition-all duration-300"></span>
-                <span class="menu-line block w-6 h-0.5 bg-white transition-all duration-300"></span>
-                <span class="menu-line block w-6 h-0.5 bg-white transition-all duration-300"></span>
+            <!-- Hamburger (mobile/tablet) -->
+            <button id="menuBtn" class="md:hidden w-10 h-10 flex flex-col justify-center items-center gap-[5px] rounded-lg hover:bg-white/5 transition" aria-label="เปิดเมนู">
+                <span id="hLine1" class="block w-[22px] h-[2px] bg-gray-200 rounded-full transition-all duration-300 origin-center"></span>
+                <span id="hLine2" class="block w-[22px] h-[2px] bg-gray-200 rounded-full transition-all duration-300"></span>
+                <span id="hLine3" class="block w-[22px] h-[2px] bg-gray-200 rounded-full transition-all duration-300 origin-center"></span>
             </button>
         </div>
-
-        <!-- Mobile dropdown menu -->
-        <div id="mobile-menu" class="md:hidden hidden flex-col border-t border-green-500/20 bg-gray-950/95 backdrop-blur-md">
-            <div class="flex flex-col px-4 py-3 gap-1 text-sm font-medium">
-                <a href="#home"    onclick="closeMobileMenu()" class="py-3 px-4 rounded-lg hover:bg-gray-800 hover:text-green-400 transition border-b border-gray-800/50">🏠 หน้าแรก</a>
-                <a href="#leader"  onclick="closeMobileMenu()" class="py-3 px-4 rounded-lg hover:bg-gray-800 hover:text-green-400 transition border-b border-gray-800/50">👑 หัวหน้าพรรค</a>
-                <a href="#team"    onclick="closeMobileMenu()" class="py-3 px-4 rounded-lg hover:bg-gray-800 hover:text-green-400 transition border-b border-gray-800/50">👥 สมาชิก</a>
-                <a href="/suggest" onclick="closeMobileMenu()" class="py-3 px-4 rounded-lg hover:bg-gray-800 hover:text-green-400 transition border-b border-gray-800/50">💡 เสนอนโยบาย</a>
-                <a href="/vote"    onclick="closeMobileMenu()" class="py-3 px-4 rounded-lg bg-green-500/10 text-green-400 border border-green-500/30 font-bold">🗳️ โหวตนโยบาย</a>
-            </div>
+        <!-- Mobile/Tablet dropdown -->
+        <div id="mobileMenu" class="mobile-drawer md:hidden" aria-hidden="true">
+            <a href="#home"     data-section="home"     class="mob-link nav-link" onclick="closeMobileMenu()">🏠 หน้าแรก</a>
+            <a href="#leader"   data-section="leader"   class="mob-link nav-link" onclick="closeMobileMenu()">👑 หัวหน้าพรรค</a>
+            <a href="#policies" data-section="policies" class="mob-link nav-link" onclick="closeMobileMenu()">📋 นโยบาย</a>
+            <a href="#team"     data-section="team"     class="mob-link nav-link" onclick="closeMobileMenu()">👥 สมาชิก</a>
+            <div class="mob-divider"></div>
+            <a href="suggest.html" class="mob-link mob-action" onclick="closeMobileMenu()">💡 เสนอนโยบาย</a>
+            <a href="vote.html"    class="mob-link mob-action" onclick="closeMobileMenu()">🗳️ โหวตนโยบาย</a>
         </div>
     </nav>
-
-    <script>
-        const menuBtn    = document.getElementById('menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const menuLines  = menuBtn.querySelectorAll('.menu-line');
-
-        menuBtn.addEventListener('click', () => {
-            const isOpen = !mobileMenu.classList.contains('hidden');
-            mobileMenu.classList.toggle('hidden');
-            mobileMenu.classList.toggle('flex');
-            // animate hamburger → X
-            menuLines[0].style.transform = isOpen ? '' : 'translateY(8px) rotate(45deg)';
-            menuLines[1].style.opacity   = isOpen ? '' : '0';
-            menuLines[2].style.transform = isOpen ? '' : 'translateY(-8px) rotate(-45deg)';
-        });
-
-        function closeMobileMenu() {
-            mobileMenu.classList.add('hidden');
-            mobileMenu.classList.remove('flex');
-            menuLines[0].style.transform = '';
-            menuLines[1].style.opacity   = '';
-            menuLines[2].style.transform = '';
-        }
-
-        // ปิดเมนูเมื่อคลิกนอก
-        document.addEventListener('click', (e) => {
-            if (!menuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
-                closeMobileMenu();
-            }
-        });
-    </script>
 
     <section id="home" class="pt-32 pb-20 px-4 relative overflow-hidden">
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-green-600/20 rounded-full blur-[120px] -z-10"></div>
@@ -85,13 +53,13 @@
             <div class="inline-block px-4 py-1.5 rounded-full border border-green-500/50 text-green-400 text-sm font-semibold mb-6 bg-green-500/10">
                 ⚡ พร้อมลุยทุกกิจกรรม กีฬา และ E-Sports
             </div>
-            <h1 class="text-5xl md:text-7xl font-bold mb-6">
+            <h1 class="text-4xl sm:text-5xl md:text-7xl font-bold mb-6">
                 พรรค<span class="text-green-500 glow-text">กาดกระป๋อง</span>
             </h1>
-            <p class="text-2xl text-gray-400 italic mb-10 font-light">" ทำวันนี้ ให้เหมือนพรุ่งนี้ "</p>
+            <p class="text-lg sm:text-2xl text-gray-400 italic mb-8 sm:mb-10 font-light">" ทำวันนี้ ให้เหมือนพรุ่งนี้ "</p>
             
-            <div class="flex justify-center gap-4">
-                <a href="/suggest " class="bg-green-500 hover:bg-green-400 text-black font-bold py-3 px-8 rounded-lg transition transform hover:scale-105 shadow-[0_0_20px_rgba(34,197,94,0.4)]">
+            <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
+                <a href="suggest.html" class="bg-green-500 hover:bg-green-400 text-black font-bold py-3 px-8 rounded-lg transition transform hover:scale-105 shadow-[0_0_20px_rgba(34,197,94,0.4)]">
                     เสนอนโยบาย
                 </a>
                 <a href="#team" class="bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg transition border border-gray-700">
@@ -101,7 +69,7 @@
         </div>
     </section>
 
-    <section id="leader" class="py-20 px-4">
+    <section id="leader" class="py-12 sm:py-20 px-4">
         <div class="max-w-4xl mx-auto">
             <div class="text-center mb-12">
                 <span class="text-green-500 text-sm font-bold tracking-widest uppercase">Meet Our Leader</span>
@@ -127,12 +95,71 @@
         </div>
     </section>
 
-    <section id="team" class="py-20 px-4 bg-gray-900">
+    <!-- ====== POLICIES SECTION ====== -->
+    <section id="policies" class="py-20 px-4 bg-gray-950">
         <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold mb-2">สมาชิกพรรคทั้ง 10 คน</h2>
-                <p class="text-gray-400">ตัวตึงสายกีฬาและเกมส์ พร้อมทำงานเพื่อทุกคน</p>
+            <div class="text-center mb-14">
+                <span class="text-green-500 text-sm font-bold tracking-widest uppercase">Our Promises</span>
+                <h2 class="text-2xl sm:text-3xl font-bold mt-2 text-white">นโยบายพรรคกาดกระป๋อง</h2>
+                <p class="text-gray-400 mt-2">สิ่งที่เราตั้งใจจะทำเพื่อทุกคนในโรงเรียน</p>
             </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <div class="policy-feature-card group">
+                    <div class="policy-icon">🎮</div>
+                    <h3 class="text-xl font-bold text-green-400 mb-2">E-Sports Tournament</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">จัดการแข่งขัน E-Sports อย่างเป็นทางการในโรงเรียน ไม่ว่าจะเป็น Valorant, ROV, หรือเกมอื่นๆ ตามความต้องการของนักเรียน ให้คนสายเกมมีเวทีของตัวเองบ้าง</p>
+                    <div class="policy-tag">🏆 กีฬา / เกม</div>
+                </div>
+
+                <div class="policy-feature-card group">
+                    <div class="policy-icon">⚽</div>
+                    <h3 class="text-xl font-bold text-green-400 mb-2">กีฬาสีหลากหลาย</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">ผลักดันให้ช่วงกีฬาสีมีกีฬาหลากหลายประเภทมากขึ้น ไม่ใช่แค่ฟุตบอลหรือวิ่ง แต่รวมถึงบาสเกตบอล, แบดมินตัน, วอลเลย์บอล และอื่นๆ ให้ทุกคนมีกีฬาที่ตัวเองถนัด</p>
+                    <div class="policy-tag">🏅 กิจกรรม</div>
+                </div>
+
+                <div class="policy-feature-card group">
+                    <div class="policy-icon">💪</div>
+                    <h3 class="text-xl font-bold text-green-400 mb-2">Mini Gym ราคาถูก</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">จัดตั้ง Mini Gym ในโรงเรียน เก็บค่าสมาชิกแบบรายวัน/รายเดือนในราคาที่นักเรียนเข้าถึงได้ง่าย ทำให้นักเรียนมีพื้นที่ออกกำลังกาย และโรงเรียนยังได้ทุนคืนอย่างต่อเนื่อง</p>
+                    <div class="policy-tag">🏋️ สุขภาพ</div>
+                </div>
+
+                <div class="policy-feature-card group">
+                    <div class="policy-icon">🎵</div>
+                    <h3 class="text-xl font-bold text-green-400 mb-2">Mini Concert ศุกร์เย็น</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">จัดกิจกรรมดนตรีสดช่วงวันศุกร์เย็น แนวเดียวกับการเปิดหมวกในตลาดนัด เปิดพื้นที่ให้นักเรียนสายดนตรีได้แสดงฝีมือ สร้างบรรยากาศสนุกสนานก่อนสุดสัปดาห์</p>
+                    <div class="policy-tag">🎤 ศิลปะ / บันเทิง</div>
+                </div>
+
+                <div class="policy-feature-card group">
+                    <div class="policy-icon">💧</div>
+                    <h3 class="text-xl font-bold text-green-400 mb-2">จุดกรอกน้ำที่สนามกีฬา</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">ติดตั้งจุดกรอกน้ำดื่มสะอาดบริเวณสนามกีฬา เพื่อความสะดวกของนักเรียนที่เล่นกีฬา ลดการซื้อน้ำขวดพลาสติกและดีต่อสิ่งแวดล้อมด้วย</p>
+                    <div class="policy-tag">🌿 สิ่งอำนวยความสะดวก</div>
+                </div>
+
+                <div class="policy-feature-card border-green-500/40 bg-green-500/5 flex flex-col items-center justify-center text-center">
+                    <div class="text-4xl mb-4">💡</div>
+                    <h3 class="text-lg font-bold text-white mb-2">มีไอเดียเพิ่มเติม?</h3>
+                    <p class="text-gray-400 text-sm mb-5">เสนอนโยบายหรือไอเดียใหม่ๆ ของคุณเข้ามาได้เลย ทีมงานพร้อมรับฟังทุกเสียง</p>
+                    <a href="suggest.html" class="bg-green-500 hover:bg-green-400 text-black font-bold py-2 px-6 rounded-lg text-sm transition transform hover:scale-105">
+                        เสนอนโยบาย →
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="team" class="py-12 sm:py-20 px-4 bg-gray-900">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-8 sm:mb-12">
+                <h2 class="text-2xl sm:text-3xl font-bold mb-2">สมาชิกพรรคทั้ง 10 คน</h2>
+                <p class="text-gray-400 text-sm sm:text-base">ตัวตึงสายกีฬาและเกมส์ พร้อมทำงานเพื่อทุกคน</p>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5">
            <div class="member-card bg-gray-950 p-5 rounded-2xl border border-gray-800 text-center flex flex-col items-center justify-between">
                     <div class="flex flex-col items-center w-full">
                         <img src="member\Andfew.jpg" class="w-24 h-24 rounded-full mb-4 border-2 border-green-500 object-cover shadow-[0_0_15px_rgba(34,197,94,0.2)]">
@@ -235,22 +262,23 @@
                         <i class="fa-brands fa-instagram"></i> @wr_sk69
                     </a>
                 </div>
+            </div>
         </div>
     </section>
 
-    <section class="py-20 relative bg-green-900/20 border-t border-green-500/20">
+    <section class="py-14 sm:py-20 relative bg-green-900/20 border-t border-green-500/20">
         <div class="max-w-4xl mx-auto text-center px-4">
             <div class="inline-block bg-green-500/10 text-green-400 px-4 py-1 rounded-full text-sm font-medium mb-4 border border-green-500/30">
                 ✔️ ร่วมเป็นส่วนหนึ่งกับเรา
             </div>
-            <h2 class="text-4xl font-bold mb-4 text-white glow-text">พร้อมลุยไปด้วยกันหรือยัง?</h2>
+            <h2 class="text-2xl sm:text-4xl font-bold mb-4 text-white glow-text">พร้อมลุยไปด้วยกันหรือยัง?</h2>
             <p class="text-gray-400 mb-8">มาร่วมสร้างโรงเรียนที่เต็มไปด้วยความสนุกและพื้นที่แสดงออก ทุกเสียงของคุณมีความหมาย</p>
             
             <div class="flex flex-col sm:flex-row justify-center gap-4">
                 <a href="#" class="bg-white text-black font-bold py-3 px-8 rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2">
                     <i class="fa-solid fa-check-to-slot"></i> เลือกกาดกระป๋อง เบอร์ 1
                 </a>
-                <a href="suggest.html " class="bg-transparent border-2 border-green-500 text-green-400 font-bold py-3 px-8 rounded-lg hover:bg-green-500 hover:text-black transition flex items-center justify-center gap-2">
+                <a href="suggest.html" class="bg-transparent border-2 border-green-500 text-green-400 font-bold py-3 px-8 rounded-lg hover:bg-green-500 hover:text-black transition flex items-center justify-center gap-2">
                     <i class="fa-solid fa-users"></i> เสนอนโยบาย
                 </a>
             </div>
@@ -272,7 +300,7 @@
                 <span class="text-gray-400 text-sm font-bold">ติดตามเรา</span>
                 <div class="flex gap-4">
                     <a href="https://www.instagram.com/pakgardkrapong/" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-white hover:bg-green-500 hover:text-black transition"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="https://www.tiktok.com/@pakgardkrapong?_r=1&_t=ZS-96btBjKWRW6" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-white hover:bg-green-500 hover:text-black transition"><i class="fa-brands fa-tiktok"></i></a>
+                    <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-white hover:bg-green-500 hover:text-black transition"><i class="fa-brands fa-tiktok"></i></a>
                 </div>
             </div>
         </div>
@@ -281,6 +309,76 @@
             <p class="mt-1">© 2026 Pakgardkrapong. All Rights Reserved.</p>
         </div>
     </footer>
-    <script src="script.js"></script>
+        <script src="script.js"></script>
+
+    <script>
+        // ---- Mobile Menu ----
+        const menuBtn  = document.getElementById('menuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const hLine1   = document.getElementById('hLine1');
+        const hLine2   = document.getElementById('hLine2');
+        const hLine3   = document.getElementById('hLine3');
+        let menuOpen   = false;
+
+        function closeMobileMenu() {
+            menuOpen = false;
+            mobileMenu.classList.remove('open');
+            mobileMenu.setAttribute('aria-hidden', 'true');
+            hLine1.style.transform = '';
+            hLine2.style.opacity   = '1';
+            hLine3.style.transform = '';
+        }
+        menuBtn.addEventListener('click', () => {
+            menuOpen = !menuOpen;
+            mobileMenu.classList.toggle('open', menuOpen);
+            mobileMenu.setAttribute('aria-hidden', String(!menuOpen));
+            if (menuOpen) {
+                hLine1.style.transform = 'translateY(7px) rotate(45deg)';
+                hLine2.style.opacity   = '0';
+                hLine3.style.transform = 'translateY(-7px) rotate(-45deg)';
+            } else {
+                hLine1.style.transform = '';
+                hLine2.style.opacity   = '1';
+                hLine3.style.transform = '';
+            }
+        });
+        // Close on outside tap
+        document.addEventListener('click', e => {
+            if (menuOpen && !menuBtn.contains(e.target) && !mobileMenu.contains(e.target)) closeMobileMenu();
+        });
+
+        const navLinks = document.querySelectorAll(".nav-link[data-section]");
+        const sections = document.querySelectorAll("section[id]");
+
+        function setActiveNav(id) {
+            navLinks.forEach(link => {
+                const isActive = link.dataset.section === id;
+                link.classList.toggle("text-green-400", isActive);
+                link.classList.toggle("font-bold", isActive);
+                link.classList.toggle("border-green-400", isActive);
+                link.classList.toggle("text-gray-300", !isActive);
+                link.classList.toggle("border-transparent", !isActive);
+            });
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) setActiveNav(entry.target.id);
+            });
+        }, { rootMargin: "-40% 0px -55% 0px" });
+
+        sections.forEach(s => observer.observe(s));
+
+        // Sync mobile nav active state
+        function setActiveMobNav(id) {
+            document.querySelectorAll('.mob-link.nav-link[data-section]').forEach(link => {
+                link.classList.toggle('mob-active', link.dataset.section === id);
+            });
+        }
+        const mobObs = new IntersectionObserver(entries => {
+            entries.forEach(e => { if (e.isIntersecting) setActiveMobNav(e.target.id); });
+        }, { rootMargin: "-40% 0px -55% 0px" });
+        sections.forEach(s => mobObs.observe(s));
+    </script>
 </body>
 </html>

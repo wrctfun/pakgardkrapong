@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หลังบ้านลับ - กาดกระป๋อง</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-950 text-white font-prompt">
+
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <h3 class="text-2xl font-bold text-red-500 mb-2">🔒 แผงควบคุมลับพรรค</h3>
+            <p class="text-sm text-gray-400 mb-6">พื้นที่เฉพาะเจ้าหน้าที่พรรคกาดกระป๋อง</p>
+            <input type="password" id="adminPass" class="admin-input" placeholder="รหัสผ่านลับ">
+            <button class="btn-login" onclick="checkPassword()">ยืนยันตัวตน</button>
+        </div>
+    </div>
+
+    <div class="admin-container" id="adminContainer">
+        <h1 class="admin-title">🚩 ระบบบริหารนโยบายพรรค</h1>
+        
+        <div class="section-title">📥 1. รอยืนยันเพื่อเปิดโหวต (Pending)</div>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>รหัส</th><th>ผู้เสนอ</th><th>หัวข้อ</th><th>รายละเอียด</th><th>การจัดการ</th></tr></thead>
+                <tbody id="pendingTable"></tbody>
+            </table>
+        </div>
+
+        <div class="section-title">📊 2. กำลังเปิดโหวต (Live Scores)</div>
+        <div class="table-container mb-20">
+            <table>
+                <thead><tr><th>รหัส</th><th>หัวข้อ</th><th>👍 เอาด้วย</th><th>👎 ไม่เอา</th><th>การจัดการ</th></tr></thead>
+                <tbody id="liveTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
